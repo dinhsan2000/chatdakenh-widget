@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test Page — Customer Website Simulation</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+    .hero {
+      text-align: center;
+      padding: 80px 20px 40px;
+      color: white;
+    }
+    .hero h1 { font-size: 42px; margin-bottom: 12px; }
+    .hero p { font-size: 18px; opacity: 0.9; }
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    }
+    .card h2 { font-size: 20px; margin-bottom: 12px; color: #1a1a2e; }
+    .card p { color: #555; line-height: 1.7; }
+    .badge {
+      display: inline-block;
+      background: #10b981;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 16px;
+    }
+    .info-box {
+      background: #f8f9fb;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+      font-size: 14px;
+    }
+    .info-box code {
+      background: #e2e8f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>🛍️ My Awesome Store</h1>
+    <p>This page simulates a customer website with ChatDaKenh widget embedded</p>
+  </div>
+
+  <div class="content">
+    <div class="card">
+      <h2>📦 Widget Test Status</h2>
+      <p>
+        If the widget loaded correctly, you should see a <strong>floating chat button</strong>
+        in the bottom-right corner of this page.
+      </p>
+      <p style="margin-top: 8px;">
+        Click it to open the chat window and test sending messages.
+      </p>
+      <div class="info-box">
+        <strong>Loaded from:</strong> <code>/dist/widget.js</code> (built bundle, giống CDN)
+      </div>
+      <span class="badge" id="status">⏳ Loading widget...</span>
+    </div>
+
+    <div class="card">
+      <h2>🔧 How It Works</h2>
+      <p>This page loads the built <code>widget.js</code> via a regular <code>&lt;script&gt;</code> tag — exactly how a customer would embed it on their website.</p>
+      <div class="info-box">
+        <pre style="white-space: pre-wrap; font-size: 13px;">&lt;script
+  src="/dist/widget.js"
+  data-widget-id="widget_56a2a66178452af6bae8ab07"
+  data-api-url="http://localhost:3000/api/v1"
+  data-ws-url="http://localhost:3002"
+&gt;&lt;/script&gt;</pre>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📋 Checklist</h2>
+      <p>1. ✅ Backend API đang chạy (<code>localhost:3000</code>)</p>
+      <p>2. ✅ Socket server đang chạy (<code>localhost:3001</code>)</p>
+      <p>3. ✅ Widget ID hợp lệ (đã tạo qua API)</p>
+      <p>4. ✅ File <code>dist/widget.js</code> đã build (<code>npm run build</code>)</p>
+    </div>
+  </div>
+
+  <!--
+    ========================================
+    WIDGET EMBED — giống y hệt khách hàng nhúng trên website
+    Chỉ thay đổi:
+      - data-widget-id: widget ID thật từ database
+      - data-api-url: URL backend API
+      - data-ws-url: URL WebSocket server
+    ========================================
+  -->
+  <script
+    src="/dist/widget.js"
+    data-widget-id="widget_56a2a66178452af6bae8ab07"
+    data-api-url="http://localhost:3000/api/v1"
+    data-ws-url="http://localhost:3002"
+  ></script>
+
+  <script>
+    // Kiểm tra widget đã load chưa
+    setTimeout(() => {
+      const el = document.getElementById('status')
+      if (window.ChatDaKenh) {
+        el.textContent = '✅ Widget loaded! (v' + window.ChatDaKenh.version + ')'
+        el.style.background = '#10b981'
+      } else {
+        el.textContent = '❌ Widget failed to load'
+        el.style.background = '#ef4444'
+      }
+    }, 1000)
+  </script>
+</body>
+</html>

@@ -2,12 +2,12 @@
 export interface WidgetConfig {
   widget_id: string
   name: string
+  website_url?: string
   settings: WidgetSettings
 }
 
 export interface WidgetSettings {
   theme: 'light' | 'dark' | 'auto'
-  primaryColor: string
   position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
   autoOpen: boolean
   showOnPages: string[]
@@ -17,10 +17,18 @@ export interface WidgetSettings {
   placeholderText: string
   requireEmail: boolean
   collectUserInfo: boolean
-  welcome_heading: string
-  welcome_tagline: string
+  subtitle: string
   widget_bubble_type: string
-  widget_bubble_launcher_title: string
+  enable_business_hours: boolean
+  business_hours: BusinessHour[]
+  timezone: string // IANA timezone e.g. 'Asia/Ho_Chi_Minh' or UTC offset e.g. 'UTC+7'
+}
+
+export interface BusinessHour {
+  day: string
+  enabled: boolean
+  startTime: string
+  endTime: string
 }
 
 // ============= API Responses =============

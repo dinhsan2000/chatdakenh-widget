@@ -54,7 +54,20 @@ class WidgetApiService {
       throw new Error('Failed to initialize widget')
     }
 
-    return result.data
+    const data = result.data
+    const normalizedSettings = {
+      ...(data.widget_config.settings as unknown as Record<string, unknown>),
+    }
+    delete normalizedSettings.primaryColor
+    delete normalizedSettings.widget_bubble_launcher_title
+
+    return {
+      ...data,
+      widget_config: {
+        ...data.widget_config,
+        settings: normalizedSettings as unknown as InitResponse['widget_config']['settings'],
+      },
+    }
   }
 
   /**
@@ -83,6 +96,40 @@ class WidgetApiService {
 
     if (!result.success) {
       throw new Error('Failed to fetch messages')
+    }
+
+    return result.data
+  }
+
+  /**
+   * Upload file from widget visitor
+   * Max 10MB. Allowed: images, documents, audio, video, archives.
+   */
+  async uploadFile(file: File): Promise<{ url: string; name: string; size: number; type: string }> {
+    const token = storage.getSessionToken()
+    const tenantId = storage.getCompanyId()
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const response = await fetch(`${this.baseUrl}/upload`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(tenantId ? { 'x-tenant-id': tenantId } : {}),
+        // Do NOT set Content-Type — browser will set multipart boundary automatically
+      },
+      body: formData,
+    })
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}))
+      throw new Error(err.message || `Upload failed: ${response.status}`)
+    }
+
+    const result = await response.json()
+    if (!result.success) {
+      throw new Error(result.message || 'Upload failed')
     }
 
     return result.data

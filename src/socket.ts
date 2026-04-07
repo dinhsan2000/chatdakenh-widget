@@ -14,6 +14,7 @@ type DisconnectHandler = (reason: string) => void
 class WidgetSocketService {
   private socket: Socket | null = null
   private wsUrl: string = ''
+  private pendingJoinConversationId: string | null = null
   private handlers = {
     message: new Set<MessageHandler>(),
     typing: new Set<TypingHandler>(),
@@ -29,7 +30,11 @@ class WidgetSocketService {
    * Auth = session_token (widget session, không phải user JWT)
    */
   connect(): void {
-    if (this.socket?.connected) return
+    if (this.socket?.connected) {
+      // Already connected — just join room if pending
+      this._joinStoredConversation()
+      return
+    }
 
     const sessionToken = storage.getSessionToken()
     if (!sessionToken) {
@@ -46,17 +51,13 @@ class WidgetSocketService {
       reconnectionAttempts: 10,
       auth: {
         token: sessionToken,
-        type: 'widget', // Phân biệt với connection từ Dashboard
+        type: 'widget',
       },
     })
 
     this.socket.on('connect', () => {
-      console.log('[CDK Widget] Socket connected')
-      // Auto-rejoin conversation nếu có
-      const conversationId = storage.getConversationId()
-      if (conversationId) {
-        this.joinConversation(conversationId)
-      }
+      console.log('[CDK Widget] Socket connected, id:', this.socket?.id)
+      this._joinStoredConversation()
     })
 
     this.socket.on('disconnect', (reason) => {
@@ -64,19 +65,37 @@ class WidgetSocketService {
       this.handlers.disconnect.forEach(h => h(reason))
     })
 
+    this.socket.on('reconnect', () => {
+      console.log('[CDK Widget] Socket reconnected')
+      this._joinStoredConversation()
+    })
+
+    // Confirm room join
+    this.socket.on('joined_conversation', (data: any) => {
+      console.log('[CDK Widget] ✅ Confirmed joined room:', data?.conversationId)
+    })
+
     // Listen for agent messages
-    // Hỗ trợ cả event mới (widget:message) và legacy (receive_message)
-    this.socket.on(SOCKET_EVENTS.RECEIVE_MESSAGE, (data) => {
+    // Gateway emits 'receive_message' event (the LEGACY event name)
+    this.socket.on(SOCKET_EVENTS.RECEIVE_MESSAGE_LEGACY, (data) => {
+      console.log('[CDK Widget] 📩 Received event [receive_message]:', JSON.stringify(data).substring(0, 200))
       this._handleIncomingMessage(data)
     })
 
-    this.socket.on(SOCKET_EVENTS.RECEIVE_MESSAGE_LEGACY, (data) => {
+    // Also listen on widget-specific namespace (future-proofing)
+    this.socket.on(SOCKET_EVENTS.RECEIVE_MESSAGE, (data) => {
+      console.log('[CDK Widget] 📩 Received event [widget:message]:', JSON.stringify(data).substring(0, 200))
       this._handleIncomingMessage(data)
     })
 
     // Listen for typing indicator from agent
     this.socket.on(SOCKET_EVENTS.AGENT_TYPING, (data) => {
       this.handlers.typing.forEach(h => h(data))
+    })
+
+    // Also listen for generic typing event (what the gateway actually emits)
+    this.socket.on('typing', (data) => {
+      this.handlers.typing.forEach(h => h({ isTyping: data?.isTyping ?? false }))
     })
 
     // Session expired → force re-init
@@ -89,6 +108,20 @@ class WidgetSocketService {
     this.socket.on('error', (error) => {
       console.error('[CDK Widget] Socket error:', error)
     })
+
+    this.socket.on('connect_error', (error) => {
+      console.error('[CDK Widget] Socket connect_error:', error.message)
+    })
+  }
+
+  /**
+   * Join stored conversation room after connect/reconnect
+   */
+  private _joinStoredConversation(): void {
+    const conversationId = this.pendingJoinConversationId || storage.getConversationId()
+    if (conversationId) {
+      this.joinConversation(conversationId)
+    }
   }
 
   /**
@@ -97,9 +130,14 @@ class WidgetSocketService {
   private _handleIncomingMessage(data: any): void {
     // Backend format: { data: { messages: MessageEntity }, success: true }
     const message = data?.data?.messages
-    if (!message) return
+    if (!message) {
+      console.warn('[CDK Widget] Received message event but no message data:', data)
+      return
+    }
+ 
+    console.log('[CDK Widget] Message details — type:', message.message_type, ', sender:', message.sender_type, ', content:', message.content?.substring(0, 50))
 
-    // Chỉ nhận message outgoing (từ agent) — incoming (từ mình) đã add local rồi
+    // Accept outgoing messages (from agent) — incoming (from self) already added locally via optimistic UI
     if (message.message_type === 'outgoing') {
       const normalizedMessage: Message = {
         id: message.id,
@@ -112,6 +150,8 @@ class WidgetSocketService {
         quote_id: message.quote_id,
       }
       this.handlers.message.forEach(h => h(normalizedMessage))
+    } else {
+      console.log('[CDK Widget] Skipped own message (incoming):', message.id)
     }
   }
 
@@ -119,11 +159,16 @@ class WidgetSocketService {
    * Join conversation room để nhận messages
    */
   joinConversation(conversationId: string): void {
-    if (!this.socket?.connected) return
+    this.pendingJoinConversationId = conversationId
 
-    // Emit event — hỗ trợ cả widget namespace mới và legacy
+    if (!this.socket?.connected) {
+      console.log('[CDK Widget] Socket not connected yet, will join room on connect:', conversationId)
+      return
+    }
+
+    // Emit join event to server
     this.socket.emit(SOCKET_EVENTS.JOIN_LEGACY, conversationId)
-    console.log('[CDK Widget] Joined conversation:', conversationId)
+    console.log('[CDK Widget] Emitted join_receive_message for:', conversationId)
   }
 
   /**
@@ -138,7 +183,8 @@ class WidgetSocketService {
    * Emit typing event
    */
   emitTyping(conversationId: string, isTyping: boolean): void {
-    this.socket?.emit(SOCKET_EVENTS.TYPING, { conversationId, isTyping })
+    // Use 'typing' directly — matches Gateway @SubscribeMessage('typing')
+    this.socket?.emit('typing', { conversationId, isTyping })
   }
 
   /**

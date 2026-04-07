@@ -19,7 +19,13 @@
 
 .cdk-widget {
   position: fixed;
-  z-index: 2147483647; /* Max z-index */
+  z-index: 2147483647;
+  color-scheme: light;
+  --cdk-brand: #0b63f6;
+  --cdk-brand-hover: #0852d6;
+  --cdk-brand-soft: #dbeafe;
+  --cdk-brand-contrast: #ffffff;
+  /* Max z-index */
 }
 
 /* Position variants */
@@ -27,14 +33,17 @@
   bottom: 20px;
   right: 20px;
 }
+
 .cdk-bottom-left {
   bottom: 20px;
   left: 20px;
 }
+
 .cdk-top-right {
   top: 20px;
   right: 20px;
 }
+
 .cdk-top-left {
   top: 20px;
   left: 20px;
@@ -69,6 +78,7 @@
   right: auto;
   left: 0;
 }
+
 .cdk-top-right .cdk-panel,
 .cdk-top-left .cdk-panel {
   bottom: auto;
@@ -82,12 +92,24 @@
   pointer-events: auto;
 }
 
+/* Compact launcher: nudge panel down a bit for better alignment */
+.cdk-widget-compact.cdk-bottom-right .cdk-panel,
+.cdk-widget-compact.cdk-bottom-left .cdk-panel {
+  bottom: 58px;
+}
+
+.cdk-widget-compact.cdk-top-right .cdk-panel,
+.cdk-widget-compact.cdk-top-left .cdk-panel {
+  top: 86px;
+}
+
 /* ============= Header ============= */
 .cdk-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
+  background: linear-gradient(135deg, #0f6bff 0%, #0b63f6 55%, #0852d6 100%);
   color: #ffffff;
   flex-shrink: 0;
 }
@@ -95,6 +117,13 @@
 .cdk-header-info {
   flex: 1;
   min-width: 0;
+}
+
+.cdk-header-avatar {
+  width: 40px;
+  height: 40px;
+  margin-right: 12px;
+  object-fit: contain;
 }
 
 .cdk-header-title {
@@ -109,6 +138,25 @@
   font-size: 12px;
   opacity: 0.85;
   margin-top: 2px;
+  transition: opacity 0.2s ease;
+}
+
+.cdk-subtitle-typing {
+  font-style: italic;
+  opacity: 1;
+  animation: cdk-typingPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes cdk-typingPulse {
+
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 
 .cdk-header-close {
@@ -129,6 +177,40 @@
 
 .cdk-header-close:hover {
   background: rgba(255, 255, 255, 0.35);
+}
+
+/* Compact header layout */
+.cdk-widget-compact .cdk-header {
+  padding: 12px 14px;
+}
+
+.cdk-widget-compact .cdk-header-avatar {
+  width: 36px;
+  height: 36px;
+  margin-right: 11px;
+}
+
+.cdk-widget-compact .cdk-header-title {
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.cdk-widget-compact .cdk-header-subtitle {
+  font-size: 12px;
+  margin-top: 1px;
+  line-height: 1.2;
+}
+
+.cdk-widget-compact .cdk-header-close {
+  width: 30px;
+  height: 30px;
+  margin-left: 10px;
+  border-radius: 8px;
+}
+
+.cdk-widget-compact .cdk-header-close svg {
+  width: 17px;
+  height: 17px;
 }
 
 /* ============= Messages ============= */
@@ -163,6 +245,7 @@
     opacity: 0;
     transform: translateY(6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -188,7 +271,9 @@
 }
 
 .cdk-msg-bubble-visitor {
+  background: var(--cdk-brand);
   color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-bottom-right-radius: 4px;
 }
 
@@ -204,6 +289,73 @@
   color: #9ca3af;
   margin-top: 4px;
   padding: 0 4px;
+}
+
+/* ============= Attachments ============= */
+.cdk-msg-attachments {
+  margin-bottom: 4px;
+}
+
+.cdk-attachment-img-link {
+  display: block;
+}
+
+.cdk-attachment-img {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.cdk-attachment-img:hover {
+  opacity: 0.85;
+}
+
+.cdk-attachment-file {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  font-size: 13px;
+  transition: background 0.2s;
+}
+
+.cdk-attachment-file:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.cdk-msg-bubble-visitor .cdk-attachment-file {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.cdk-msg-bubble-visitor .cdk-attachment-file:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.cdk-attachment-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.cdk-attachment-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cdk-attachment-size {
+  font-size: 11px;
+  opacity: 0.7;
+  flex-shrink: 0;
 }
 
 /* ============= Typing Indicator ============= */
@@ -225,52 +377,143 @@
 .cdk-dot:nth-child(1) {
   animation-delay: -0.32s;
 }
+
 .cdk-dot:nth-child(2) {
   animation-delay: -0.16s;
 }
 
 @keyframes cdk-bounce {
+
   0%,
   80%,
   100% {
     transform: scale(0.6);
     opacity: 0.4;
   }
+
   40% {
     transform: scale(1);
     opacity: 1;
   }
 }
 
-/* ============= Input Area ============= */
+/* ============= Input Actions (Emoji, File) ============= */
+.cdk-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+}
+
+.cdk-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.cdk-action-btn:hover {
+  background: #f3f4f6;
+  color: #1f2937;
+}
+
 .cdk-input-area {
   display: flex;
   align-items: flex-end;
-  gap: 8px;
-  padding: 12px 16px;
-  border-top: 1px solid #e5e7eb;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #ffffff;
+}
+
+/* ============= Emoji Picker ============= */
+.cdk-emoji-picker {
+  position: absolute;
+  bottom: 100%;
+  left: 12px;
+  width: 300px;
+  max-width: calc(100% - 24px);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  z-index: 10;
+  margin-bottom: 8px;
+}
+
+.cdk-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.cdk-emoji-grid::-webkit-scrollbar {
+  width: 4px;
+}
+
+.cdk-emoji-grid::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.cdk-emoji-btn {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cdk-emoji-btn:hover {
+  background: #f3f4f6;
+}
+
+.cdk-input-box {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 2px 3px;
+  transition: border-color 0.2s, background 0.2s;
+  gap: 1px;
+}
+
+.cdk-input-box:focus-within {
+  border-color: var(--cdk-brand);
   background: #ffffff;
 }
 
 .cdk-input {
   flex: 1;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 10px 14px;
+  border: none;
+  background: transparent;
+  padding: 4px 8px;
   font-size: 14px;
   resize: none;
   outline: none;
-  max-height: 100px;
-  min-height: 40px;
-  font-family: inherit;
+  max-height: 88px;
+  min-height: 30px;
   color: #1f2937;
-  background: #f9fafb;
-  transition: border-color 0.2s;
-}
-
-.cdk-input:focus {
-  border-color: #6366f1;
-  background: #ffffff;
+  font-family: inherit;
+  line-height: 1.35;
 }
 
 .cdk-input::placeholder {
@@ -281,10 +524,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
+  background: var(--cdk-brand);
   color: white;
   cursor: pointer;
   flex-shrink: 0;
@@ -294,8 +538,9 @@
 }
 
 .cdk-send-btn:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: scale(1.05);
+  background: var(--cdk-brand-hover);
+  opacity: 1;
+  transform: scale(1.03);
 }
 
 .cdk-send-btn:disabled {
@@ -314,7 +559,7 @@
 }
 
 .cdk-footer a {
-  color: #6366f1;
+  color: var(--cdk-brand);
   text-decoration: none;
   font-weight: 500;
 }
@@ -328,15 +573,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 58px;
+  height: 58px;
   border: none;
-  border-radius: 50%;
-  color: white;
+  border-radius: 99px;
+  color: #ffffff;
   cursor: pointer;
+  background: #0b63f6;
   box-shadow:
-    0 4px 14px rgba(0, 0, 0, 0.2),
-    0 2px 6px rgba(0, 0, 0, 0.1);
+    0 12px 26px rgba(11, 99, 246, 0.32),
+    0 4px 10px rgba(2, 6, 23, 0.15);
   transition:
     transform 0.2s,
     box-shadow 0.2s;
@@ -344,14 +590,138 @@
 }
 
 .cdk-toggle:hover {
-  transform: scale(1.08);
+  transform: translateY(-1px);
   box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.25),
-    0 4px 10px rgba(0, 0, 0, 0.15);
+    0 16px 30px rgba(11, 99, 246, 0.36),
+    0 5px 12px rgba(2, 6, 23, 0.16);
 }
 
 .cdk-toggle:active {
-  transform: scale(0.95);
+  transform: scale(0.98);
+}
+
+.cdk-toggle-logo {
+  width: 38px;
+  height: 38px;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 1px 2px rgba(255, 255, 255, 0.18));
+}
+
+.cdk-toggle[aria-label="Toggle chat"]>svg {
+  color: #ffffff;
+}
+
+/* ============= Compact Toggle ============= */
+.cdk-toggle-compact {
+  height: 136px;
+  border-radius: 13px 0 0 13px;
+  border: none;
+  flex-direction: column;
+  padding: 12px 0;
+  width: 40px;
+  position: absolute;
+  right: -20px;
+  /* Counteract .cdk-widget right: 20px to make it flush */
+  bottom: 0;
+  transform: none;
+  background: #0b63f6;
+  box-shadow: -10px 12px 24px rgba(11, 99, 246, 0.28);
+}
+
+.cdk-toggle-compact:hover {
+  transform: none;
+  box-shadow: -12px 14px 28px rgba(11, 99, 246, 0.34);
+}
+
+.cdk-toggle-compact:active {
+  transform: none;
+}
+
+.cdk-toggle-compact.cdk-compact-left {
+  border-radius: 0 13px 13px 0;
+  left: -20px;
+  right: auto;
+  box-shadow: 10px 12px 24px rgba(11, 99, 246, 0.28);
+}
+
+.cdk-toggle-compact.cdk-compact-left:hover {
+  transform: none;
+  box-shadow: 12px 14px 28px rgba(11, 99, 246, 0.34);
+}
+
+.cdk-toggle-compact.cdk-compact-left:active {
+  transform: none;
+}
+
+.cdk-compact-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  padding: 6px 0;
+  position: relative;
+  z-index: 1;
+}
+
+.cdk-compact-logo {
+  width: 24px;
+  height: 24px;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  position: static;
+  transform: none;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+.cdk-compact-title {
+  writing-mode: vertical-rl;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  text-transform: none;
+  white-space: nowrap;
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(2, 6, 23, 0.2);
+  transform: rotate(180deg);
+  margin: 0;
+  line-height: 1;
+  transform-origin: center;
+}
+
+.cdk-toggle-compact:not(.cdk-compact-left) .cdk-compact-title {
+  /* On the right side, standard rotate ensures reading top to bottom */
+  transform: none;
+}
+
+.cdk-compact-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Adjust badge position when compact */
+.cdk-toggle-compact .cdk-badge {
+  top: -4px;
+  bottom: auto;
+  right: auto;
+  left: -8px;
+}
+
+.cdk-compact-left .cdk-badge {
+  left: auto;
+  right: -8px;
 }
 
 /* ============= Unread Badge ============= */
@@ -378,6 +748,7 @@
   from {
     transform: scale(0);
   }
+
   to {
     transform: scale(1);
   }
@@ -396,4 +767,110 @@
     bottom: 12px !important;
     right: 12px !important;
   }
+}
+
+/* ============= Error Toast ============= */
+.cdk-toast {
+  position: absolute;
+  bottom: 62px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  z-index: 10;
+  animation: cdk-toastSlideIn 0.3s ease;
+}
+
+.cdk-toast-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.cdk-toast-close {
+  background: none;
+  border: none;
+  color: #b91c1c;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 0 0 8px;
+  opacity: 0.6;
+}
+
+.cdk-toast-close:hover {
+  opacity: 1;
+}
+
+@keyframes cdk-toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============= Failed Message ============= */
+.cdk-msg-failed {
+  opacity: 0.85;
+}
+
+.cdk-msg-bubble-failed {
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+  border: 1px dashed #fca5a5 !important;
+}
+
+.cdk-msg-meta {
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+.cdk-msg-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cdk-msg-error-text {
+  font-size: 11px;
+  color: #dc2626;
+}
+
+.cdk-msg-retry-btn {
+  background: none;
+  border: 1px solid #dc2626;
+  color: #dc2626;
+  border-radius: 4px;
+  font-size: 11px;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cdk-msg-retry-btn:hover {
+  background: #dc2626;
+  color: #fff;
+}
+
+.cdk-msg-delete-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 4px;
+}
+
+.cdk-msg-delete-btn:hover {
+  color: #dc2626;
 }

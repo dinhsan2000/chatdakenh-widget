@@ -7,6 +7,7 @@ import {
 } from "preact/hooks";
 import type { FunctionComponent } from "preact";
 import type { Message, WidgetConfig, WidgetSettings } from "./types";
+import logoSvg from "./assets/logo.svg";
 import { api } from "./api";
 import { widgetSocket } from "./socket";
 import {
@@ -49,7 +50,7 @@ const Widget: FunctionComponent<WidgetProps> = ({
 
   const settings = config?.settings;
   const isCompactBubble = config?.settings?.widget_bubble_type === "compact";
-  const launcherLogoSrc = "/logo.svg";
+  const launcherLogoSrc = logoSvg;
 
   const normalizeDayKey = useCallback((rawDay: string) => {
     const normalized = (rawDay || "").trim().toLowerCase();

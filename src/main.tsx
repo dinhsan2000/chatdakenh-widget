@@ -13,6 +13,7 @@
  */
 import { render, type ComponentChild } from 'preact';
 import Widget from './Widget';
+import { setLocale } from './i18n';
 
 interface WidgetInstance {
   container: HTMLDivElement;
@@ -27,14 +28,17 @@ const DEFAULT_API_URL =
 const DEFAULT_WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:3002';
 
 /**
- * Mount widget vào DOM
+ * Mount widget into DOM
  */
 function mountWidget(config: {
   widgetId: string;
   apiUrl?: string;
   wsUrl?: string;
+  lang?: string;
 }): void {
-  const { widgetId, apiUrl = DEFAULT_API_URL, wsUrl = DEFAULT_WS_URL } = config;
+  const { widgetId, apiUrl = DEFAULT_API_URL, wsUrl = DEFAULT_WS_URL, lang } = config;
+
+  if (lang) setLocale(lang);
 
   // Prevent duplicate mount
   if (instances.has(widgetId)) {
@@ -92,9 +96,10 @@ function autoInit(): void {
     const widgetId = script.getAttribute('data-widget-id');
     const apiUrl = script.getAttribute('data-api-url') || DEFAULT_API_URL;
     const wsUrl = script.getAttribute('data-ws-url') || DEFAULT_WS_URL;
+    const lang = script.getAttribute('data-lang') || undefined;
 
     if (widgetId) {
-      mountWidget({ widgetId, apiUrl, wsUrl });
+      mountWidget({ widgetId, apiUrl, wsUrl, lang });
     }
   });
 }

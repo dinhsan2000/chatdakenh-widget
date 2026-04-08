@@ -35,7 +35,7 @@ export interface BusinessHour {
 export interface InitResponse {
   session_token: string
   visitor_id: string
-  company_id: string
+  tenant_id: string
   conversation_id: string
   widget_config: WidgetConfig
 }

@@ -3,7 +3,7 @@ export const STORAGE_KEYS = {
   VISITOR_ID: 'cdk_visitor_id',
   CONVERSATION_ID: 'cdk_conversation_id',
   SESSION_TOKEN: 'cdk_session_token',
-  COMPANY_ID: 'cdk_company_id',
+  TENANT_ID: 'cdk_tenant_id',
 } as const
 
 // ============= SOCKET EVENTS =============

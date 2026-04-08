@@ -18,7 +18,7 @@ class WidgetApiService {
 
   private async request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const token = storage.getSessionToken()
-    const tenantId = storage.getCompanyId()
+    const tenantId = storage.getTenantId()
     const response = await fetch(`${this.baseUrl}${path}`, {
       ...options,
       headers: {
@@ -107,7 +107,7 @@ class WidgetApiService {
    */
   async uploadFile(file: File): Promise<{ url: string; name: string; size: number; type: string }> {
     const token = storage.getSessionToken()
-    const tenantId = storage.getCompanyId()
+    const tenantId = storage.getTenantId()
 
     const formData = new FormData()
     formData.append('file', file)

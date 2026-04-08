@@ -107,7 +107,7 @@ const Widget: FunctionComponent<WidgetProps> = ({
         console.log(data);
 
         storage.setSessionToken(data.session_token);
-        storage.setCompanyId(data.company_id);
+        storage.setTenantId(data.tenant_id);
         storage.setConversationId(data.conversation_id);
 
         setConfig(data.widget_config);

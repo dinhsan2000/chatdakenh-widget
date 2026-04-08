@@ -105,8 +105,6 @@ const Widget: FunctionComponent<WidgetProps> = ({
           page_info: getPageInfo(),
           browser_info: getBrowserInfo(),
         });
-        console.log(data);
-
         storage.setSessionToken(data.session_token);
         storage.setTenantId(data.tenant_id);
         storage.setConversationId(data.conversation_id);
@@ -129,8 +127,8 @@ const Widget: FunctionComponent<WidgetProps> = ({
         } catch {
           /* no messages yet */
         }
-      } catch (err) {
-        console.error("[CDK Widget] Init failed:", err);
+      } catch {
+        // Init failed silently
       }
     };
 
@@ -151,7 +149,7 @@ const Widget: FunctionComponent<WidgetProps> = ({
         setUnreadCount((prev) => prev + 1);
       }
 
-      // Khách nhận tin nhắn -> người kia đã gõ xong
+      // Message received — agent has stopped typing
       setAgentTyping(false);
       if (agentTypingTimeoutRef.current) {
         window.clearTimeout(agentTypingTimeoutRef.current);
@@ -165,13 +163,13 @@ const Widget: FunctionComponent<WidgetProps> = ({
 
       setAgentTyping(data.isTyping);
 
-      // Clear timeout nếu có
+      // Clear existing timeout
       if (agentTypingTimeoutRef.current) {
         window.clearTimeout(agentTypingTimeoutRef.current);
         agentTypingTimeoutRef.current = null;
       }
 
-      // Auto-clear typing indicator sau 3 giây (phòng trường hợp mất mạng / ko gửi sự kiện false)
+      // Auto-clear typing indicator after 3s (fallback if stop event is lost)
       if (data.isTyping) {
         agentTypingTimeoutRef.current = window.setTimeout(() => {
           setAgentTyping(false);
@@ -352,12 +350,9 @@ const Widget: FunctionComponent<WidgetProps> = ({
             : m,
         ),
       );
-    } catch (err) {
-      console.error("[CDK Widget] Send failed:", err);
-      // Mark message as failed (keep it visible with error state)
+    } catch {
       setFailedMsgIds((prev) => new Set(prev).add(tempId));
-      // Show toast notification
-      showError(`Gửi tin nhắn thất bại. Nhấn ⚠️ để thử lại.`);
+      showError("Failed to send message. Tap to retry.");
     } finally {
       setIsSending(false);
       // Ensure input maintains focus after sending
@@ -425,10 +420,9 @@ const Widget: FunctionComponent<WidgetProps> = ({
             : m,
         ),
       );
-    } catch (err) {
-      console.error("[CDK Widget] Retry failed:", err);
+    } catch {
       setFailedMsgIds((prev) => new Set(prev).add(msgId));
-      showError("Thử lại thất bại. Kiểm tra kết nối mạng.");
+      showError("Retry failed. Check your connection.");
     }
   }, [messages, widgetId, showError]);
 
@@ -533,8 +527,6 @@ const Widget: FunctionComponent<WidgetProps> = ({
         ),
       );
     } catch (err) {
-      console.error("[CDK Widget] Upload failed:", err);
-      // Remove optimistic message on error
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
       alert(`Upload failed: ${(err as Error).message}`);
     } finally {
@@ -765,12 +757,12 @@ const Widget: FunctionComponent<WidgetProps> = ({
                 <div class="cdk-msg-meta">
                   {isFailed ? (
                     <div class="cdk-msg-error">
-                      <span class="cdk-msg-error-text">Gửi thất bại</span>
+                      <span class="cdk-msg-error-text">Send failed</span>
                       <button
                         class="cdk-msg-retry-btn"
                         onClick={() => handleRetry(msg.id)}
-                        title="Thử lại"
-                      >⟳ Thử lại</button>
+                        title="Retry"
+                      >⟳ Retry</button>
                       <button
                         class="cdk-msg-delete-btn"
                         onClick={() => {
@@ -781,7 +773,7 @@ const Widget: FunctionComponent<WidgetProps> = ({
                             return next;
                           });
                         }}
-                        title="Xoá"
+                        title="Delete"
                       >✕</button>
                     </div>
                   ) : (

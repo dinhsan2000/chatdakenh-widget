@@ -1,14 +1,14 @@
 /**
  * ChatDaKenh Widget SDK — Entry Point
  *
- * Usage trên website khách hàng:
+ * Usage on customer website:
  * <script src="https://cdn.chatdakenh.com/widget.js"
  *         data-widget-id="widget_abc123"
  *         data-api-url="https://api.chatdakenh.com"
  *         data-ws-url="https://ws.chatdakenh.com"
  *         async></script>
  *
- * Hoặc manual:
+ * Or manual:
  * window.ChatDaKenh.init({ widgetId: 'widget_abc123' })
  */
 import { render, type ComponentChild } from 'preact';
@@ -21,7 +21,7 @@ interface WidgetInstance {
 
 const instances = new Map<string, WidgetInstance>();
 
-// Default URLs — có thể override qua script tag attributes hoặc init()
+// Default URLs — can be overridden via script tag attributes or init()
 const DEFAULT_API_URL =
   import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 const DEFAULT_WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:3002';
@@ -38,7 +38,6 @@ function mountWidget(config: {
 
   // Prevent duplicate mount
   if (instances.has(widgetId)) {
-    console.warn(`[CDK] Widget ${widgetId} already mounted`);
     return;
   }
 
@@ -64,7 +63,6 @@ function mountWidget(config: {
     },
   });
 
-  console.log(`[CDK] Widget mounted: ${widgetId}`);
 }
 
 /**

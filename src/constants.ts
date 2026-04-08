@@ -18,7 +18,7 @@ export const SOCKET_EVENTS = {
   AGENT_TYPING: 'widget:agent_typing',
   SESSION_EXPIRED: 'widget:session_expired',
 
-  // Fallback: dùng event name chung (tương thích Gateway hiện tại)
+  // Fallback: generic event names (compatible with current Gateway)
   RECEIVE_MESSAGE_LEGACY: 'receive_message',
   JOIN_LEGACY: 'join_receive_message',
 } as const

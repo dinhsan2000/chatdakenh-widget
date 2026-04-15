@@ -1,8 +1,18 @@
 {
   "name": "@chatdakenh/widget",
-  "version": "1.0.0",
-  "description": "ChatDaKenh embeddable chat widget",
+  "version": "0.1.2",
+  "description": "ChatDaKenh embeddable chat widget for websites and applications.",
+  "author": "ChatDaKenh Team <support@chatdakenh.vn>",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dinhsan2000/chatdakenh-widget"
+  },
   "type": "module",
+  "main": "dist/widget.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",

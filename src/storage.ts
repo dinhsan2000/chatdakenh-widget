@@ -40,9 +40,9 @@ class StorageManager {
   getSessionToken(): string | null { return this.get(STORAGE_KEYS.SESSION_TOKEN) }
   setSessionToken(token: string): void { this.set(STORAGE_KEYS.SESSION_TOKEN, token) }
 
-  // Company
-  getCompanyId(): string | null { return this.get(STORAGE_KEYS.COMPANY_ID) }
-  setCompanyId(id: string): void { this.set(STORAGE_KEYS.COMPANY_ID, id) }
+  // Tenant
+  getTenantId(): string | null { return this.get(STORAGE_KEYS.TENANT_ID) }
+  setTenantId(id: string): void { this.set(STORAGE_KEYS.TENANT_ID, id) }
 
   // Clear all
   clearAll(): void {

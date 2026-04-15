@@ -7,6 +7,8 @@ import {
 } from "preact/hooks";
 import type { FunctionComponent } from "preact";
 import type { Message, WidgetConfig, WidgetSettings } from "./types";
+import logoSvg from "./assets/logo.svg";
+import { t } from "./i18n";
 import { api } from "./api";
 import { widgetSocket } from "./socket";
 import {
@@ -49,7 +51,7 @@ const Widget: FunctionComponent<WidgetProps> = ({
 
   const settings = config?.settings;
   const isCompactBubble = config?.settings?.widget_bubble_type === "compact";
-  const launcherLogoSrc = "/logo.svg";
+  const launcherLogoSrc = logoSvg;
 
   const normalizeDayKey = useCallback((rawDay: string) => {
     const normalized = (rawDay || "").trim().toLowerCase();
@@ -104,10 +106,8 @@ const Widget: FunctionComponent<WidgetProps> = ({
           page_info: getPageInfo(),
           browser_info: getBrowserInfo(),
         });
-        console.log(data);
-
         storage.setSessionToken(data.session_token);
-        storage.setCompanyId(data.company_id);
+        storage.setTenantId(data.tenant_id);
         storage.setConversationId(data.conversation_id);
 
         setConfig(data.widget_config);
@@ -128,8 +128,8 @@ const Widget: FunctionComponent<WidgetProps> = ({
         } catch {
           /* no messages yet */
         }
-      } catch (err) {
-        console.error("[CDK Widget] Init failed:", err);
+      } catch {
+        // Init failed silently
       }
     };
 
@@ -150,7 +150,7 @@ const Widget: FunctionComponent<WidgetProps> = ({
         setUnreadCount((prev) => prev + 1);
       }
 
-      // Khách nhận tin nhắn -> người kia đã gõ xong
+      // Message received — agent has stopped typing
       setAgentTyping(false);
       if (agentTypingTimeoutRef.current) {
         window.clearTimeout(agentTypingTimeoutRef.current);
@@ -164,13 +164,13 @@ const Widget: FunctionComponent<WidgetProps> = ({
 
       setAgentTyping(data.isTyping);
 
-      // Clear timeout nếu có
+      // Clear existing timeout
       if (agentTypingTimeoutRef.current) {
         window.clearTimeout(agentTypingTimeoutRef.current);
         agentTypingTimeoutRef.current = null;
       }
 
-      // Auto-clear typing indicator sau 3 giây (phòng trường hợp mất mạng / ko gửi sự kiện false)
+      // Auto-clear typing indicator after 3s (fallback if stop event is lost)
       if (data.isTyping) {
         agentTypingTimeoutRef.current = window.setTimeout(() => {
           setAgentTyping(false);
@@ -304,7 +304,7 @@ const Widget: FunctionComponent<WidgetProps> = ({
         id: `offline_${Date.now()}`,
         content:
           settings?.offlineMessage ||
-          "We're currently offline. Leave a message and we'll get back to you!",
+          t("offlineMessage"),
         sender_type: "user",
         message_type: "outgoing",
         sent_at: new Date().toISOString(),
@@ -351,12 +351,9 @@ const Widget: FunctionComponent<WidgetProps> = ({
             : m,
         ),
       );
-    } catch (err) {
-      console.error("[CDK Widget] Send failed:", err);
-      // Mark message as failed (keep it visible with error state)
+    } catch {
       setFailedMsgIds((prev) => new Set(prev).add(tempId));
-      // Show toast notification
-      showError(`Gửi tin nhắn thất bại. Nhấn ⚠️ để thử lại.`);
+      showError(t("sendFailedToast"));
     } finally {
       setIsSending(false);
       // Ensure input maintains focus after sending
@@ -424,10 +421,9 @@ const Widget: FunctionComponent<WidgetProps> = ({
             : m,
         ),
       );
-    } catch (err) {
-      console.error("[CDK Widget] Retry failed:", err);
+    } catch {
       setFailedMsgIds((prev) => new Set(prev).add(msgId));
-      showError("Thử lại thất bại. Kiểm tra kết nối mạng.");
+      showError(t("retryFailed"));
     }
   }, [messages, widgetId, showError]);
 
@@ -535,7 +531,7 @@ const Widget: FunctionComponent<WidgetProps> = ({
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      alert(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max allowed: 10MB.`);
+      alert(t("fileTooLarge", { size: (file.size / 1024 / 1024).toFixed(1) }));
       return;
     }
 
@@ -544,7 +540,7 @@ const Widget: FunctionComponent<WidgetProps> = ({
     const isImage = file.type.startsWith("image/");
     const optimisticMsg: Message = {
       id: tempId,
-      content: isImage ? "" : `📎 Uploading ${file.name}...`,
+      content: isImage ? "" : `📎 ${t("uploading", { name: file.name })}`,
       sender_type: "contact",
       message_type: "incoming",
       sent_at: new Date().toISOString(),
@@ -592,10 +588,8 @@ const Widget: FunctionComponent<WidgetProps> = ({
         ),
       );
     } catch (err) {
-      console.error("[CDK Widget] Upload failed:", err);
-      // Remove optimistic message on error
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
-      alert(`Upload failed: ${(err as Error).message}`);
+      alert(t("uploadFailed", { error: (err as Error).message }));
     } finally {
       // Ensure input maintains focus after sending
       setTimeout(() => {
@@ -717,10 +711,10 @@ const Widget: FunctionComponent<WidgetProps> = ({
     }
 
     if (!todaySchedule) {
-      return `Closed today${tzLabel ? ` (${tzLabel})` : ''}`;
+      return `${t("closedToday")}${tzLabel ? ` (${tzLabel})` : ''}`;
     }
 
-    return `Service hours: ${todaySchedule.startTime}–${todaySchedule.endTime}${tzLabel ? ` (${tzLabel})` : ''}`;
+    return `${t("serviceHours")} ${todaySchedule.startTime}–${todaySchedule.endTime}${tzLabel ? ` (${tzLabel})` : ''}`;
   }, [settings, getBusinessNow, normalizeDayKey]);
 
   const position = settings?.position || "bottom-right";
@@ -753,18 +747,18 @@ const Widget: FunctionComponent<WidgetProps> = ({
             />
           )}
           <div class="cdk-header-info">
-            <div class="cdk-header-title">{config?.name || "Chat"}</div>
+            <div class="cdk-header-title">{config?.name || t("defaultTitle")}</div>
             <div class={`cdk-header-subtitle ${agentTyping ? 'cdk-subtitle-typing' : ''}`}>
               {agentTyping
-                ? "Agent is typing..."
-                : (businessHoursSubtitle || settings?.subtitle || "We typically reply within minutes")
+                ? t("agentTyping")
+                : (businessHoursSubtitle || settings?.subtitle || t("defaultSubtitle"))
               }
             </div>
           </div>
           <button
             class="cdk-header-close"
             onClick={() => setIsOpen(false)}
-            aria-label="Close"
+            aria-label={t("close")}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 16.5a1 1 0 0 1-.7-.29l-6-6A1 1 0 0 1 6.7 8.79L12 14.09l5.3-5.3a1 1 0 1 1 1.41 1.42l-6 6A1 1 0 0 1 12 16.5z" />
@@ -779,13 +773,13 @@ const Widget: FunctionComponent<WidgetProps> = ({
             (isOnline
               ? settings?.welcomeMessage
               : settings?.offlineMessage ||
-              "We're currently offline. Leave a message and we'll get back to you!") && (
+              t("offlineMessage")) && (
               <div class="cdk-msg cdk-msg-agent">
                 <div class="cdk-msg-bubble cdk-msg-bubble-agent">
                   {isOnline
                     ? settings?.welcomeMessage
                     : settings?.offlineMessage ||
-                    "We're currently offline. Leave a message and we'll get back to you!"}
+                    t("offlineMessage")}
                 </div>
               </div>
             )}
@@ -843,12 +837,12 @@ const Widget: FunctionComponent<WidgetProps> = ({
                 <div class="cdk-msg-meta">
                   {isFailed ? (
                     <div class="cdk-msg-error">
-                      <span class="cdk-msg-error-text">Gửi thất bại</span>
+                      <span class="cdk-msg-error-text">{t("sendFailed")}</span>
                       <button
                         class="cdk-msg-retry-btn"
                         onClick={() => handleRetry(msg.id)}
-                        title="Thử lại"
-                      >⟳ Thử lại</button>
+                        title={t("retry")}
+                      >⟳ {t("retry")}</button>
                       <button
                         class="cdk-msg-delete-btn"
                         onClick={() => {
@@ -859,7 +853,7 @@ const Widget: FunctionComponent<WidgetProps> = ({
                             return next;
                           });
                         }}
-                        title="Xoá"
+                        title={t("delete")}
                       >✕</button>
                     </div>
                   ) : (
@@ -901,7 +895,7 @@ const Widget: FunctionComponent<WidgetProps> = ({
               <textarea
                 ref={inputRef}
                 class="cdk-input"
-                placeholder={settings?.placeholderText || "Type a message..."}
+                placeholder={settings?.placeholderText || t("defaultPlaceholder")}
                 value={inputText}
                 onInput={(e) => {
                   setInputText((e.target as HTMLTextAreaElement).value);
@@ -930,7 +924,7 @@ const Widget: FunctionComponent<WidgetProps> = ({
                 type="button"
                 class="cdk-action-btn"
                 onClick={() => setShowEmoji(!showEmoji)}
-                title="Add emoji"
+                title={t("addEmoji")}
               >
                 <svg
                   width="20"
@@ -949,7 +943,7 @@ const Widget: FunctionComponent<WidgetProps> = ({
                 </svg>
               </button>
 
-              <label class="cdk-action-btn" title="Attach file">
+              <label class="cdk-action-btn" title={t("attachFile")}>
                 <input
                   type="file"
                   style={{ display: "none" }}
@@ -974,7 +968,7 @@ const Widget: FunctionComponent<WidgetProps> = ({
               class="cdk-send-btn"
               onClick={handleSend}
               disabled={!inputText.trim() || isSending}
-              aria-label="Send"
+              aria-label={t("send")}
             >
               <svg
                 width="18"
@@ -994,7 +988,7 @@ const Widget: FunctionComponent<WidgetProps> = ({
         <button
           class={`cdk-toggle ${!isOpen && isCompactBubble ? "cdk-toggle-compact" : ""} ${!isOpen && isCompactBubble && position.includes("left") ? "cdk-compact-left" : ""}`}
           onClick={toggleWidget}
-          aria-label="Toggle chat"
+          aria-label={t("toggleChat")}
         >
           {!isCompactBubble && isOpen ? (
             <svg
@@ -1019,7 +1013,7 @@ const Widget: FunctionComponent<WidgetProps> = ({
                 class="cdk-compact-logo"
               />
               <span class="cdk-compact-title">
-                Chat with us
+                {t("chatWithUs")}
               </span>
             </div>
           ) : (

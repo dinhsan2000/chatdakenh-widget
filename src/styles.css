@@ -874,3 +874,55 @@
 .cdk-msg-delete-btn:hover {
   color: #dc2626;
 }
+
+/* ============= Buttons (Action / Link) ============= */
+.cdk-msg-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.cdk-msg-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  width: 100%;
+  text-align: center;
+}
+
+.cdk-msg-bubble-agent .cdk-msg-btn {
+  background: rgba(11, 99, 246, 0.08);
+  color: #0b63f6;
+  border-color: rgba(11, 99, 246, 0.15);
+}
+
+.cdk-msg-bubble-agent .cdk-msg-btn:hover {
+  background: rgba(11, 99, 246, 0.15);
+  transform: translateY(-1px);
+}
+
+.cdk-msg-bubble-visitor .cdk-msg-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.cdk-msg-bubble-visitor .cdk-msg-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.cdk-icon-external {
+  font-size: 14px;
+  opacity: 0.8;
+}

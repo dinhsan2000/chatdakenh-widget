@@ -41,6 +41,17 @@ export interface InitResponse {
 }
 
 // ============= Message Types =============
+export interface MessageButton {
+  id: string
+  title: string
+  type: 'action' | 'link'
+  url?: string
+}
+
+export interface ExtraInfo {
+  buttons?: MessageButton[]
+  [key: string]: any
+}
 export interface Message {
   id: string
   content: string
@@ -48,6 +59,7 @@ export interface Message {
   sender_type: 'contact' | 'user'  // contact = visitor, user = agent
   message_type?: 'incoming' | 'outgoing'
   attachments?: FileAttachment[]
+  extra_info?: ExtraInfo
   sent_at: string
   quote_id?: string | null
   sender_id?: string
@@ -71,6 +83,7 @@ export interface SendMessagePayload {
   quote_id?: string | null
   message_type: string
   attachments?: string[]
+  postback_id?: string
 }
 
 export interface SendMessageResponse {

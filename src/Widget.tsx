@@ -431,6 +431,66 @@ const Widget: FunctionComponent<WidgetProps> = ({
     }
   }, [messages, widgetId, showError]);
 
+  // ============= Handle Button Click =============
+  const handleButtonClick = useCallback(async (btn: { id: string, title: string, type: 'action' | 'link', url?: string }) => {
+    if (btn.type === 'link' && btn.url) {
+      window.open(btn.url, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    if (btn.type === 'action') {
+      const tempId = `temp_${Date.now()}`;
+      // Optimistic postback message showing the button title to the user
+      const optimisticMsg: Message = {
+        id: tempId,
+        content: btn.title,
+        sender_type: "contact",
+        message_type: "incoming",
+        sent_at: new Date().toISOString(),
+      };
+
+      setMessages((prev) => [...prev, optimisticMsg]);
+      // The auto-scroll useEffect will handle the scrolling
+
+      try {
+        const conversationId = storage.getConversationId() || "";
+        const visitorId = storage.getVisitorId() || "";
+
+        const response = await api.sendMessage({
+          conversation_id: conversationId,
+          widget_id: widgetId,
+          visitor_id: visitorId,
+          sender_name: visitorId,
+          message: btn.title,         // Show user-friendly title in UI
+          postback_id: btn.id,       // Internal ID for workflow matching
+          message_type: "postback",
+        });
+
+        const newConvId = response.data?.conversation_id || response.data?.conversation?.id;
+        if (newConvId) {
+          storage.setConversationId(newConvId);
+          widgetSocket.joinConversation(newConvId);
+        }
+
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === tempId
+              ? {
+                ...optimisticMsg,
+                id: response.data?.id || tempId,
+                sent_at: response.data?.sent_at || optimisticMsg.sent_at,
+              }
+              : m,
+          ),
+        );
+      } catch (err) {
+        console.error("[CDK Widget] Postback failed:", err);
+        setFailedMsgIds((prev) => new Set(prev).add(tempId));
+        showError(`Button action failed. Vui lòng kiểm tra lại mạng.`);
+      }
+    }
+  }, [widgetId, showError]);
+
   // ============= Key handlers =============
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -760,6 +820,25 @@ const Widget: FunctionComponent<WidgetProps> = ({
                     </div>
                   )}
                   {msg.content && <span>{msg.content}</span>}
+
+                  {/* Button Renderer */}
+                  {msg.extra_info?.buttons && msg.extra_info.buttons.length > 0 && (
+                    <div class="cdk-msg-buttons">
+                      {msg.extra_info.buttons.map((btn) => (
+                        <button
+                          key={btn.id}
+                          class={`cdk-msg-btn cdk-msg-btn-${btn.type}`}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            handleButtonClick(btn);
+                          }}
+                        >
+                          {btn.title}
+                          {btn.type === 'link' && <span class="cdk-icon-external">↗</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div class="cdk-msg-meta">
                   {isFailed ? (

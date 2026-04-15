@@ -136,6 +136,7 @@ class WidgetSocketService {
     }
  
     console.log('[CDK Widget] Message details — type:', message.message_type, ', sender:', message.sender_type, ', content:', message.content?.substring(0, 50))
+    console.log('[CDK Widget] extra_info type:', typeof message.extra_info, 'content:', JSON.stringify(message.extra_info))
 
     // Accept outgoing messages (from agent) — incoming (from self) already added locally via optimistic UI
     if (message.message_type === 'outgoing') {
@@ -146,6 +147,7 @@ class WidgetSocketService {
         sender_type: 'user', // user = agent side
         message_type: message.message_type,
         attachments: message.attachments,
+        extra_info: message.extra_info,
         sent_at: message.sent_at,
         quote_id: message.quote_id,
       }
